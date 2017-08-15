@@ -1,0 +1,7 @@
+server ns1.{{ domain }}
+zone {{ rev_domain }}
+update add {{ ansible_default_ipv4.address | ipaddr('revdns') }} 10800 IN PTR {{ host_name }}.
+send
+zone mkdev
+update add {{ host_name }}. 10800 IN A {{ ansible_default_ipv4.address }}
+send

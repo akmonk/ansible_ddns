@@ -1,0 +1,5 @@
+---
+- hosts: dns-master
+  sudo: yes
+  roles:
+    - dns-master

@@ -1,0 +1,6 @@
+---
+    # vars file for Bind setup
+    domain: mkdev
+    rev_domain: 15.168.192.in-addr.arpa
+    host_name: dns-client.mkdev
+    dns_master_ip: 192.168.15.3

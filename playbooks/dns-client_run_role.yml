@@ -1,0 +1,5 @@
+---
+- hosts: dns-client
+  sudo: yes
+  roles:
+    - dns-client

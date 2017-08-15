@@ -1,0 +1,80 @@
+---
+# tasks file for Bind-utils setup
+- name: Install bind-utils
+  yum:
+    pkg: bind-utils
+    state: installed
+
+- name: Install epel-release
+  yum:
+    name:
+      - epel-release
+
+- name: Install nginx
+  yum:
+    name:
+      - nginx
+
+- name: Starting nginx
+  service:
+    name: nginx
+    state: started
+
+- name: Add 80 port access
+  firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: Set hostname
+  hostname:
+    name: "{{ host_name }}"
+
+- name: Set hostname fact
+  set_fact:
+    ansible_fqdn: "{{ host_name }}"
+
+- name: Add dns-master to resolv.conf
+  lineinfile: 
+    dest: /etc/resolv.conf
+    state: present
+    line: 'nameserver {{ dns_master_ip }}'
+    insertbefore: BOF
+
+- name: Copy master key file
+  copy:
+    src: /tmp/{{domain}}_vault.key
+    dest: /root/{{domain}}_vault.key
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Copy master private file
+  copy:
+    src: /tmp/{{domain}}_vault.private
+    dest: /root/{{domain}}_vault.private
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Copy nsupdate script
+  template:
+    src: nsupdate.sh.j2
+    dest: /root/nsupdate.sh
+    owner: root
+    group: root
+    mode: 0700
+
+- name: Copy info
+  template:
+    src: dns-client.txt.j2
+    dest: /root/dns-client.txt
+    owner: root
+    group: root
+    mode: 0700
+
+- name: nsupdate execute
+  command: /root/nsupdate.sh /root/dns-client.txt
+  register: command_result
+
