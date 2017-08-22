@@ -97,10 +97,10 @@
   register: master_private_file
 
 - name: Copy master key file
-  fetch: src={{ master_key_file.stdout }} dest=/tmp/{{domain}}_vault.key flat=yes
+  fetch: src={{ master_key_file.stdout }} dest=/root/ansible_tmp/{{domain}}_vault.key flat=yes
 
 - name: Copy master key file
-  fetch: src={{ master_private_file.stdout }} dest=/tmp/{{domain}}_vault.private flat=yes
+  fetch: src={{ master_private_file.stdout }} dest=/root/ansible_tmp/{{domain}}_vault.private flat=yes
 
 - name: Open firewall port
   firewalld:

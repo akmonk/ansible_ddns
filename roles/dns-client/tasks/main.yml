@@ -1,24 +1,21 @@
 ---
-# tasks file for Bind-utils setup
-- name: Install bind-utils
-  yum:
-    pkg: bind-utils
-    state: installed
-
+# tasks file for epel-release setup
 - name: Install epel-release
   yum:
-    name:
-      - epel-release
+    pkg: epel-release
+    state: installed
 
-- name: Install nginx
+- name: Install bind-utils nginx
   yum:
     name:
+      - bind-utils
       - nginx
 
 - name: Starting nginx
   service:
     name: nginx
     state: started
+    enabled: yes
 
 - name: Add 80 port access
   firewalld:
@@ -44,7 +41,7 @@
 
 - name: Copy master key file
   copy:
-    src: /tmp/{{domain}}_vault.key
+    src: /root/ansible_tmp/{{domain}}_vault.key
     dest: /root/{{domain}}_vault.key
     owner: root
     group: root
@@ -52,7 +49,7 @@
 
 - name: Copy master private file
   copy:
-    src: /tmp/{{domain}}_vault.private
+    src: /root/ansible_tmp/{{domain}}_vault.private
     dest: /root/{{domain}}_vault.private
     owner: root
     group: root
