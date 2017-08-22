@@ -10,6 +10,7 @@
     name:
       - bind-utils
       - nginx
+      - python-dns
 
 - name: Starting nginx
   service:
@@ -26,11 +27,11 @@
 
 - name: Set hostname
   hostname:
-    name: "{{ host_name }}"
+    name: "{{ host_name_fqdn }}"
 
 - name: Set hostname fact
   set_fact:
-    ansible_fqdn: "{{ host_name }}"
+    ansible_fqdn: "{{ host_name_fqdn }}"
 
 - name: Add dns-master to resolv.conf
   lineinfile: 
@@ -55,23 +56,25 @@
     group: root
     mode: 0600
 
-- name: Copy nsupdate script
-  template:
-    src: nsupdate.sh.j2
-    dest: /root/nsupdate.sh
-    owner: root
-    group: root
-    mode: 0700
+- name: Get master private key from file
+  shell: cat /root/{{domain}}_vault.key | awk ' {print $7,$8} '
+  register: master_private_key
 
-- name: Copy info
-  template:
-    src: dns-client.txt.j2
-    dest: /root/dns-client.txt
-    owner: root
-    group: root
-    mode: 0700
+- name: Update zones mkdev
+  nsupdate:
+    key_name: "{{domain}}"
+    key_secret: "{{master_private_key.stdout}}"
+    server: "{{dns_master_ip}}"
+    zone: "{{domain}}"
+    record: "{{host_name}}"
+    value: "{{ ansible_default_ipv4.address }}"
 
-- name: nsupdate execute
-  command: /root/nsupdate.sh /root/dns-client.txt
-  register: command_result
-
+- name: Update zones PTR mkdev
+  nsupdate:
+    key_name: "{{domain}}"
+    key_secret: "{{master_private_key.stdout}}"
+    server: "{{dns_master_ip}}"
+    zone: "{{rev_domain}}"
+    record: "{{ ansible_default_ipv4.address | ipaddr('revdns') }}"
+    value: "{{ host_name }}"
+    type: "PTR"
